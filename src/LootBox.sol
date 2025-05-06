@@ -209,7 +209,7 @@ contract LootBox is VRFConsumerBaseV2Plus {
      * @param _user The address of the user to distribute the reward to
      * @param _rewardId The ID of the reward to distribute
      */
-    function _distributeReward(address _user, uint256 _rewardId) internal {
+    function _distributeReward(address _user, uint256 _rewardId) private {
         Reward memory reward = s_rewards[_rewardId];
 
         if (reward.rewardType == RewardType.POINTS) {
