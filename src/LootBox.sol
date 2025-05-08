@@ -22,6 +22,7 @@ contract LootBox is VRFConsumerBaseV2Plus {
     error LootBox__InvalidAddress();
     error LootBox__NoRewardsConfigured();
     error LootBox__TransferFailed();
+    error LootBox__IncorrectETHAmount(uint256 sent, uint256 expected);
 
     /*//////////////////////////////////////////////////////////////
                                   TYPES
@@ -148,7 +149,7 @@ contract LootBox is VRFConsumerBaseV2Plus {
      */
     function openLootBox() external payable {
         if (s_rewards.length == 0) revert LootBox__NoRewardsConfigured();
-        if (msg.value != s_openFee) revert LootBox__TransferFailed();
+        if (msg.value != s_openFee) revert LootBox__IncorrectETHAmount(msg.value, s_openFee);
 
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_keyHash,
