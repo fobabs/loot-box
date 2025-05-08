@@ -45,7 +45,6 @@ contract LootBox is VRFConsumerBaseV2Plus {
     Reward[] private s_rewards;
     uint256 private s_totalWeight;
     uint256 private s_openFee;
-    IERC20 private immutable i_paymentToken;
     mapping(uint256 => address) private s_requestToSender;
     uint256 private s_pointBalances;
 
@@ -69,7 +68,6 @@ contract LootBox is VRFConsumerBaseV2Plus {
     /**
      * @notice Deploys the LootBox contract
      * @param _openFee The fee to open a loot box
-     * @param _paymentToken The ERC20 token used to pay the fee
      * @param _vrfCoordinator The address of the VRF coordinator
      * @param _subscriptionId The id of the VRF subscription
      * @param _keyHash The hash of the key used to generate randomness
@@ -77,17 +75,13 @@ contract LootBox is VRFConsumerBaseV2Plus {
      */
     constructor(
         uint256 _openFee,
-        IERC20 _paymentToken,
         address _vrfCoordinator,
         uint256 _subscriptionId,
         bytes32 _keyHash,
         uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
-        if (_paymentToken == IERC20(address(0)) || _vrfCoordinator == address(0)) {
-            revert LootBox__InvalidAddress();
-        }
+        if (_vrfCoordinator == address(0)) revert LootBox__InvalidAddress();
         s_openFee = _openFee;
-        i_paymentToken = _paymentToken;
         i_subscriptionId = _subscriptionId;
         i_keyHash = _keyHash;
         i_callbackGasLimit = _callbackGasLimit;
@@ -152,9 +146,9 @@ contract LootBox is VRFConsumerBaseV2Plus {
     /**
      * @notice Opens a loot box and rewards the caller with a random reward
      */
-    function openLootBox() external {
+    function openLootBox() external payable {
         if (s_rewards.length == 0) revert LootBox__NoRewardsConfigured();
-        if (!i_paymentToken.transferFrom(msg.sender, address(this), s_openFee)) revert LootBox__TransferFailed();
+        if (msg.value != s_openFee) revert LootBox__TransferFailed();
 
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_keyHash,
