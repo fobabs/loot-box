@@ -10,7 +10,6 @@ import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {ERC721Mock} from "./mocks/ERC721Mock.sol";
 import {Constants} from "../src/utils/Constants.sol";
 
-
 contract LootBoxTest is Constants, Test {
     LootBox public lootBox;
     HelperConfig public helperConfig;
