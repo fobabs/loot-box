@@ -81,7 +81,6 @@ contract LootBox is VRFConsumerBaseV2Plus {
         bytes32 _keyHash,
         uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
-        if (_vrfCoordinator == address(0)) revert LootBox__InvalidAddress();
         s_openFee = _openFee;
         i_subscriptionId = _subscriptionId;
         i_keyHash = _keyHash;
@@ -227,5 +226,9 @@ contract LootBox is VRFConsumerBaseV2Plus {
      */
     function getRewardsCount() external view returns (uint256) {
         return s_rewards.length;
+    }
+
+    function getOpenFee() external view returns (uint256) {
+        return s_openFee;
     }
 }
