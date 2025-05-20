@@ -231,4 +231,8 @@ contract LootBox is VRFConsumerBaseV2Plus {
     function getOpenFee() external view returns (uint256) {
         return s_openFee;
     }
+
+    function getRewards(uint256 _rewardId) external view returns (Reward memory) {
+        return s_rewards[_rewardId];
+    }
 }
