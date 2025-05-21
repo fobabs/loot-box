@@ -62,7 +62,7 @@ contract LootBox is VRFConsumerBaseV2Plus {
     event LootBoxOpened(address indexed sender, uint256 indexed requestId);
     event RewardDistributed(address indexed sender, RewardType rewardType, address tokenAddress, uint256 amount);
     event RewardAdded(
-        uint256 indexed requestId, RewardType rewardType, address tokenAddress, uint256 amount, uint256 weight
+        uint256 indexed rewardId, RewardType rewardType, address tokenAddress, uint256 amount, uint256 weight
     );
     event FeeUpdated(uint256 newFee);
 
