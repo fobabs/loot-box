@@ -22,6 +22,7 @@ contract LootBoxTest is Constants, Test {
     bytes32 public keyHash;
     uint32 public callbackGasLimit;
 
+    address public contractOwner;
     address public player = makeAddr("player");
     uint256 public constant FUND_AMOUNT = 5 ether;
 
@@ -39,6 +40,8 @@ contract LootBoxTest is Constants, Test {
         subscriptionId = config.subscriptionId;
         keyHash = config.keyHash;
         callbackGasLimit = config.callbackGasLimit;
+
+        contractOwner = vm.addr(config.deployerKey);
     }
 
     function test_Deployment() public view {
@@ -52,13 +55,42 @@ contract LootBoxTest is Constants, Test {
     //     lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
     // }
 
+    function test_DeploymentOwner() public view {
+        assertEq(lootBox.owner(), contractOwner);
+    }
+
     function test_AddRewardPoints() public {
-        vm.prank(lootBox.owner());
+        vm.prank(contractOwner);
         lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
-        LootBox.Reward memory rewards = lootBox.getRewards(0);
-        assertEq(uint8(rewards.rewardType), uint8(LootBox.RewardType.POINTS));
-        assertEq(rewards.tokenAddress, address(0));
-        assertEq(rewards.amount, 100);
-        assertEq(rewards.weight, 50);
+        _assertReward(0, LootBox.RewardType.POINTS, address(0), 100, 50);
+    }
+
+    function test_AddRewardERC20() public {
+        vm.prank(contractOwner);
+        lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
+        _assertReward(0, LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
+    }
+
+    function test_AddRewardERC721() public {
+        vm.prank(contractOwner);
+        lootBox.addReward(LootBox.RewardType.ERC721, address(erc721Token), 0, 10);
+        _assertReward(0, LootBox.RewardType.ERC721, address(erc721Token), 0, 10);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            HELPER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    function _assertReward(
+        uint256 _index,
+        LootBox.RewardType _rewardType,
+        address _tokenAddress,
+        uint256 _amount,
+        uint256 _weight
+    ) private view {
+        LootBox.Reward memory rewards = lootBox.getRewards(_index);
+        assertEq(uint8(rewards.rewardType), uint8(_rewardType));
+        assertEq(rewards.tokenAddress, _tokenAddress);
+        assertEq(rewards.amount, _amount);
+        assertEq(rewards.weight, _weight);
     }
 }
