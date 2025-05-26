@@ -26,6 +26,11 @@ contract LootBoxTest is Constants, Test {
     address public player = makeAddr("player");
     uint256 public constant FUND_AMOUNT = 5 ether;
 
+    modifier ownerPrank() {
+        vm.prank(contractOwner);
+        _;
+    }
+
     function setUp() public {
         DeployScript deployer = new DeployScript();
         (lootBox, helperConfig) = deployer.run();
@@ -51,7 +56,7 @@ contract LootBoxTest is Constants, Test {
     // function test_ExpectEmitOnAddReward() public {
     //     vm.expectEmit(true, false, false, true);
     //     emit LootBox.RewardAdded(0, LootBox.RewardType.POINTS, address(0), 100, 50);
-    //     vm.prank(lootBox.owner());
+    //     vm.prank(contractOwner);
     //     lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
     // }
 
@@ -59,22 +64,30 @@ contract LootBoxTest is Constants, Test {
         assertEq(lootBox.owner(), contractOwner);
     }
 
-    function test_AddRewardPoints() public {
-        vm.prank(contractOwner);
+    function test_AddRewardPoints() public ownerPrank {
         lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
         _assertReward(0, LootBox.RewardType.POINTS, address(0), 100, 50);
     }
 
-    function test_AddRewardERC20() public {
-        vm.prank(contractOwner);
+    function test_AddRewardERC20() public ownerPrank {
         lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
         _assertReward(0, LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
     }
 
-    function test_AddRewardERC721() public {
-        vm.prank(contractOwner);
+    function test_AddRewardERC721() public ownerPrank {
         lootBox.addReward(LootBox.RewardType.ERC721, address(erc721Token), 0, 10);
         _assertReward(0, LootBox.RewardType.ERC721, address(erc721Token), 0, 10);
+    }
+
+    function test_AddRewardRevertsNonOwner() public {
+        hoax(msg.sender, FUND_AMOUNT);
+        vm.expectRevert("Only callable by owner");
+        lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
+    }
+
+    function test_AddRewardRevertsInvalidAddress() public ownerPrank {
+        vm.expectRevert(LootBox.LootBox__InvalidAddress.selector);
+        lootBox.addReward(LootBox.RewardType.ERC20, address(0), 100, 50);
     }
 
     /*//////////////////////////////////////////////////////////////
