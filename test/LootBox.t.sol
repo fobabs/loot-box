@@ -26,6 +26,8 @@ contract LootBoxTest is Constants, Test {
     address public player = makeAddr("player");
     uint256 public constant FUND_AMOUNT = 5 ether;
 
+    bytes public constant NON_OWNER_ERROR_MESSAGE = "Only callable by owner";
+
     modifier ownerPrank() {
         vm.prank(contractOwner);
         _;
@@ -80,8 +82,8 @@ contract LootBoxTest is Constants, Test {
     }
 
     function test_AddRewardRevertsNonOwner() public {
-        hoax(msg.sender, FUND_AMOUNT);
-        vm.expectRevert("Only callable by owner");
+        vm.prank(player);
+        vm.expectRevert(NON_OWNER_ERROR_MESSAGE);
         lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
     }
 
@@ -89,6 +91,33 @@ contract LootBoxTest is Constants, Test {
         vm.expectRevert(LootBox.LootBox__InvalidAddress.selector);
         lootBox.addReward(LootBox.RewardType.ERC20, address(0), 100, 50);
     }
+
+    function test_UpdateFee() public ownerPrank {
+        uint256 newFee = 0.5 ether;
+        lootBox.updateFee(newFee);
+        assertEq(lootBox.getOpenFee(), newFee);
+    }
+
+    function test_UpdateFeeRevertsNonOwner() public {
+        vm.prank(player);
+        vm.expectRevert(NON_OWNER_ERROR_MESSAGE);
+        uint256 newFee = 0.5 ether;
+        lootBox.updateFee(newFee);
+    }
+
+    function test_OpenLootBoxRevertsNoReward() public {
+        vm.prank(player);
+        vm.expectRevert(LootBox.LootBox__NoRewardsConfigured.selector);
+        lootBox.openLootBox{value: openFee}();
+    }
+
+    // function test_OpenLootBoxRevertsInvalidETHAmount() public ownerPrank {
+    //     lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
+    //     vm.prank(player);
+    //     uint256 playerOpenFee = 0.3 ether;
+    //     vm.expectRevert(abi.encodeWithSelector(LootBox.LootBox__IncorrectETHAmount, playerOpenFee, openFee));
+    //     lootBox.openLootBox{value: playerOpenFee}();
+    // }
 
     /*//////////////////////////////////////////////////////////////
                             HELPER FUNCTIONS
