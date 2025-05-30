@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, Vm} from "forge-std/Test.sol";
 import {LootBox} from "../src/LootBox.sol";
 import {HelperConfig} from "../script/HelperConfig.s.sol";
 import {DeployScript} from "../script/Deploy.s.sol";
@@ -111,12 +111,26 @@ contract LootBoxTest is Constants, Test {
         lootBox.openLootBox{value: openFee}();
     }
 
-    // function test_OpenLootBoxRevertsInvalidETHAmount() public ownerPrank {
+    function test_OpenLootBoxRevertsInvalidETHAmount() public ownerPrank {
+        lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
+        vm.prank(player);
+        uint256 playerOpenFee = 0.3 ether;
+        vm.expectRevert(abi.encodeWithSelector(LootBox.LootBox__IncorrectETHAmount.selector, playerOpenFee, openFee));
+        lootBox.openLootBox{value: playerOpenFee}();
+    }
+
+    // function test_OpenLootBox() public ownerPrank {
     //     lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
     //     vm.prank(player);
-    //     uint256 playerOpenFee = 0.3 ether;
-    //     vm.expectRevert(abi.encodeWithSelector(LootBox.LootBox__IncorrectETHAmount, playerOpenFee, openFee));
-    //     lootBox.openLootBox{value: playerOpenFee}();
+    //     vm.expectEmit(true, true, false, true);
+    //     emit LootBox.LootBoxOpened(player, 1);
+    //     lootBox.openLootBox{value: openFee}();
+    // }
+
+    // function test_FulfillRandomWordsPoints() public ownerPrank {
+    //     lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
+    //     vm.prank(player);
+    //     lootBox.openLootBox{value: openFee}();
     // }
 
     /*//////////////////////////////////////////////////////////////
