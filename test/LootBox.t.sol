@@ -127,11 +127,16 @@ contract LootBoxTest is Constants, Test {
     //     lootBox.openLootBox{value: openFee}();
     // }
 
-    // function test_FulfillRandomWordsPoints() public ownerPrank {
-    //     lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
-    //     vm.prank(player);
-    //     lootBox.openLootBox{value: openFee}();
-    // }
+    function test_FulfillRandomWordsPoints() public ownerPrank {
+        lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
+        vm.prank(player);
+        vm.recordLogs();
+        lootBox.openLootBox{value: openFee}();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        bytes32 requestId = logs[1].topics[2];
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
+        assertEq(lootBox.getPointsBalance(), 100);
+    }
 
     /*//////////////////////////////////////////////////////////////
                             HELPER FUNCTIONS
