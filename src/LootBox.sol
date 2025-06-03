@@ -47,7 +47,7 @@ contract LootBox is VRFConsumerBaseV2Plus {
     uint256 private s_totalWeight;
     uint256 private s_openFee;
     mapping(uint256 => address) private s_requestToSender;
-    uint256 private s_pointBalances;
+    uint256 private s_pointsBalance;
 
     // VRF Variables
     uint256 private immutable i_subscriptionId;
@@ -207,7 +207,7 @@ contract LootBox is VRFConsumerBaseV2Plus {
         Reward memory reward = s_rewards[_rewardId];
 
         if (reward.rewardType == RewardType.POINTS) {
-            s_pointBalances += reward.amount;
+            s_pointsBalance += reward.amount;
         } else if (reward.rewardType == RewardType.ERC20) {
             IERC20(reward.tokenAddress).safeTransfer(_user, reward.amount);
         } else if (reward.rewardType == RewardType.ERC721) {
@@ -234,5 +234,9 @@ contract LootBox is VRFConsumerBaseV2Plus {
 
     function getRewards(uint256 _rewardId) external view returns (Reward memory) {
         return s_rewards[_rewardId];
+    }
+
+    function getPointsBalance() external view returns (uint256) {
+        return s_pointsBalance;
     }
 }
