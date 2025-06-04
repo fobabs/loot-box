@@ -39,7 +39,9 @@ contract LootBoxTest is Constants, Test {
         vm.deal(player, FUND_AMOUNT);
 
         erc20Token = new ERC20Mock();
+        erc20Token.mint(address(lootBox), FUND_AMOUNT);
         erc721Token = new ERC721Mock();
+        erc721Token.mint(address(lootBox), 1);
 
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
         openFee = config.openFee;
@@ -77,8 +79,8 @@ contract LootBoxTest is Constants, Test {
     }
 
     function test_AddRewardERC721() public ownerPrank {
-        lootBox.addReward(LootBox.RewardType.ERC721, address(erc721Token), 0, 10);
-        _assertReward(0, LootBox.RewardType.ERC721, address(erc721Token), 0, 10);
+        lootBox.addReward(LootBox.RewardType.ERC721, address(erc721Token), 1, 10);
+        _assertReward(0, LootBox.RewardType.ERC721, address(erc721Token), 1, 10);
     }
 
     function test_AddRewardRevertsNonOwner() public {
@@ -136,6 +138,28 @@ contract LootBoxTest is Constants, Test {
         bytes32 requestId = logs[1].topics[2];
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
         assertEq(lootBox.getPointsBalance(), 100);
+    }
+
+    function test_FulfillRandomWordsERC20() public ownerPrank {
+        lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
+        vm.prank(player);
+        vm.recordLogs();
+        lootBox.openLootBox{value: openFee}();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        bytes32 requestId = logs[1].topics[2];
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
+        assertEq(erc20Token.balanceOf(player), 1000);
+    }
+
+    function test_FulfillRandomWordsERC721() public ownerPrank {
+        lootBox.addReward(LootBox.RewardType.ERC721, address(erc721Token), 1, 10);
+        vm.prank(player);
+        vm.recordLogs();
+        lootBox.openLootBox{value: openFee}();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        bytes32 requestId = logs[1].topics[2];
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
+        assertEq(erc721Token.ownerOf(1), player);
     }
 
     /*//////////////////////////////////////////////////////////////
