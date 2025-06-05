@@ -131,34 +131,19 @@ contract LootBoxTest is Constants, Test {
 
     function test_FulfillRandomWordsPoints() public ownerPrank {
         lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
-        vm.prank(player);
-        vm.recordLogs();
-        lootBox.openLootBox{value: openFee}();
-        Vm.Log[] memory logs = vm.getRecordedLogs();
-        bytes32 requestId = logs[1].topics[2];
-        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
+        _openLootBoxAndFulfillRandomWords();
         assertEq(lootBox.getPointsBalance(), 100);
     }
 
     function test_FulfillRandomWordsERC20() public ownerPrank {
         lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
-        vm.prank(player);
-        vm.recordLogs();
-        lootBox.openLootBox{value: openFee}();
-        Vm.Log[] memory logs = vm.getRecordedLogs();
-        bytes32 requestId = logs[1].topics[2];
-        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
+        _openLootBoxAndFulfillRandomWords();
         assertEq(erc20Token.balanceOf(player), 1000);
     }
 
     function test_FulfillRandomWordsERC721() public ownerPrank {
         lootBox.addReward(LootBox.RewardType.ERC721, address(erc721Token), 1, 10);
-        vm.prank(player);
-        vm.recordLogs();
-        lootBox.openLootBox{value: openFee}();
-        Vm.Log[] memory logs = vm.getRecordedLogs();
-        bytes32 requestId = logs[1].topics[2];
-        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
+        _openLootBoxAndFulfillRandomWords();
         assertEq(erc721Token.ownerOf(1), player);
     }
 
@@ -177,5 +162,14 @@ contract LootBoxTest is Constants, Test {
         assertEq(rewards.tokenAddress, _tokenAddress);
         assertEq(rewards.amount, _amount);
         assertEq(rewards.weight, _weight);
+    }
+
+    function _openLootBoxAndFulfillRandomWords() private {
+        vm.prank(player);
+        vm.recordLogs();
+        lootBox.openLootBox{value: openFee}();
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        bytes32 requestId = logs[1].topics[2];
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(uint256(requestId), address(lootBox));
     }
 }
