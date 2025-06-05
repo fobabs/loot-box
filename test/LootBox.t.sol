@@ -147,6 +147,21 @@ contract LootBoxTest is Constants, Test {
         assertEq(erc721Token.ownerOf(1), player);
     }
 
+    function test_FulfillRandomWordsRevertsInvalidRequest() public ownerPrank {
+        vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(90, address(lootBox));
+    }
+
+    function test_WithdrawETH() public ownerPrank {
+        lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
+        vm.prank(player);
+        lootBox.openLootBox{value: openFee}();
+        vm.prank(contractOwner);
+        lootBox.withdrawETH();
+        assertEq(address(lootBox).balance, 0);
+        assertEq(contractOwner.balance, openFee);
+    }
+
     /*//////////////////////////////////////////////////////////////
                             HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
