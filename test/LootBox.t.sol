@@ -153,13 +153,23 @@ contract LootBoxTest is Constants, Test {
     }
 
     function test_WithdrawETH() public ownerPrank {
-        lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
+        lootBox.addReward(LootBox.RewardType.POINTS, address(0), 100, 50);
         vm.prank(player);
         lootBox.openLootBox{value: openFee}();
         vm.prank(contractOwner);
         lootBox.withdrawETH();
         assertEq(address(lootBox).balance, 0);
         assertEq(contractOwner.balance, openFee);
+    }
+
+    function test_WithdrawTokens() public ownerPrank {
+        lootBox.addReward(LootBox.RewardType.ERC20, address(erc20Token), 1000, 30);
+        _openLootBoxAndFulfillRandomWords();
+        uint256 balanceBeforeWithdrawal = erc20Token.balanceOf(address(lootBox));
+        vm.prank(contractOwner);
+        lootBox.withdrawTokens(address(erc20Token), 1000);
+        assertEq(erc20Token.balanceOf(address(lootBox)), balanceBeforeWithdrawal - 1000);
+        assertEq(erc20Token.balanceOf(contractOwner), 1000);
     }
 
     /*//////////////////////////////////////////////////////////////
