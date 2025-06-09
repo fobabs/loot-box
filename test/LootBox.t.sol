@@ -172,6 +172,12 @@ contract LootBoxTest is Constants, Test {
         assertEq(erc20Token.balanceOf(contractOwner), 1000);
     }
 
+    function test_WithdrawRevertsNonOwner() public {
+        vm.prank(player);
+        vm.expectRevert(NON_OWNER_ERROR_MESSAGE);
+        lootBox.withdrawETH();
+    }
+
     /*//////////////////////////////////////////////////////////////
                             HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
