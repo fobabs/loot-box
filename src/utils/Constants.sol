@@ -5,8 +5,8 @@ abstract contract Constants {
     uint256 internal constant OPEN_FEE = 0.5 ether;
 
     // Chain IDs
-    uint256 internal constant MAINNET_CHAIN_ID = 1;
-    uint256 internal constant SEPOLIA_CHAIN_ID = 11_155_111;
+    uint256 internal constant OP_MAINNET_CHAIN_ID = 10;
+    uint256 internal constant OP_SEPOLIA_CHAIN_ID = 11_155_420;
     uint256 internal constant ANVIL_CHAIN_ID = 31_337;
 
     uint256 internal constant ANVIL_PRIVATE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;

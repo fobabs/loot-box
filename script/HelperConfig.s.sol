@@ -25,9 +25,9 @@ contract HelperConfig is Constants, Script {
     constructor() {
         if (block.chainid == ANVIL_CHAIN_ID) {
             activeNetworkConfig = getOrCreateAnvilEthNetworkConfig();
-        } else if (block.chainid == SEPOLIA_CHAIN_ID) {
+        } else if (block.chainid == OP_SEPOLIA_CHAIN_ID) {
             activeNetworkConfig = getSepoliaEthNetworkConfig();
-        } else if (block.chainid == MAINNET_CHAIN_ID) {
+        } else if (block.chainid == OP_MAINNET_CHAIN_ID) {
             activeNetworkConfig = getEthNetworkConfig();
         } else {
             revert HelperConfig__InvalidChainId(block.chainid);
